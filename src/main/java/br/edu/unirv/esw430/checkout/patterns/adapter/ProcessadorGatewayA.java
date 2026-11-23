@@ -16,12 +16,14 @@ import java.math.RoundingMode;
  * APPROVED/DECLINED do SDK para {@link ResultadoAutorizacao}.
  */
 @Component
-public class AdapterGatewayA implements ProcessadorPagamento {
+public class ProcessadorGatewayA extends ProcessadorGatewayBase {
+
+    public static final String NOME = "GATEWAY_A";
 
     private final GatewayASdk sdk;
     private final String merchantId;
 
-    public AdapterGatewayA(GatewayASdk sdk,
+    public ProcessadorGatewayA(GatewayASdk sdk,
                            @Value("${checkout.gateway-a.merchant-id:MERCHANT-UNIRV-A}") String merchantId) {
         if (sdk == null) {
             throw new IllegalArgumentException("SDK do Gateway A é obrigatório.");
@@ -32,7 +34,7 @@ public class AdapterGatewayA implements ProcessadorPagamento {
 
     @Override
     public String getNomeGateway() {
-        return GATEWAY_A;
+        return NOME;
     }
 
     @Override
@@ -87,33 +89,7 @@ public class AdapterGatewayA implements ProcessadorPagamento {
         }
     }
 
-    private ResultadoAutorizacao negado(String mensagem, String detalhe) {
-        return new ResultadoAutorizacao(false, getNomeGateway(), null, null, mensagem, detalhe);
-    }
-
-    private void validar(RequisicaoPagamento requisicao) {
-        if (requisicao == null) {
-            throw new IllegalArgumentException("Requisição de pagamento é obrigatória.");
-        }
-        if (requisicao.getValor() == null) {
-            throw new IllegalArgumentException("Valor da requisição é obrigatório.");
-        }
-        if (requisicao.getReferenciaPedido() == null || requisicao.getReferenciaPedido().isBlank()) {
-            throw new IllegalArgumentException("Referência do pedido é obrigatória.");
-        }
-    }
-
     private String vazioParaNulo(String valor) {
         return valor == null || valor.isBlank() ? null : valor;
-    }
-
-    private String mascarar(String token) {
-        if (token == null || token.isBlank()) {
-            return "(vazio)";
-        }
-        if (token.length() <= 4) {
-            return "****";
-        }
-        return "****" + token.substring(token.length() - 4);
     }
 }

@@ -2,24 +2,30 @@
 
 Padrão estrutural **Adapter** no pacote `br.edu.unirv.esw430.checkout.patterns.adapter`.
 
-A interface alvo é `ProcessadorPagamento`. `AdapterGatewayA` e `AdapterGatewayB` convertem a `RequisicaoPagamento` do checkout para as assinaturas incompatíveis de `GatewayASdk` (centavos e status textual) e `GatewayBSdk` (double e código numérico) e devolvem um `ResultadoAutorizacao`. O `CheckoutFacade` depende só da interface alvo.
+A interface alvo é `ProcessadorPagamento`. `ProcessadorGatewayA` e `ProcessadorGatewayB` convertem a `RequisicaoPagamento` do checkout para as assinaturas incompatíveis de `GatewayASdk` (centavos e status textual) e `GatewayBSdk` (double e código numérico) e devolvem um `ResultadoAutorizacao`. A validação da requisição, o mascaramento do token e o resultado negado ficam em `ProcessadorGatewayBase`. O `CheckoutFacade` depende só da interface alvo.
 
 ```mermaid
 classDiagram
     class ProcessadorPagamento {
         <<interface>>
-        +GATEWAY_A String
-        +GATEWAY_B String
         +autorizarTransacao(requisicao) ResultadoAutorizacao
         +getNomeGateway() String
     }
-    class AdapterGatewayA {
+    class ProcessadorGatewayBase {
+        <<abstract>>
+        #validar(requisicao) void
+        #negado(mensagem, detalhe) ResultadoAutorizacao
+        #mascarar(token) String
+    }
+    class ProcessadorGatewayA {
+        +NOME String$
         -sdk GatewayASdk
         -merchantId String
         +autorizarTransacao(requisicao) ResultadoAutorizacao
         +getNomeGateway() String
     }
-    class AdapterGatewayB {
+    class ProcessadorGatewayB {
+        +NOME String$
         -sdk GatewayBSdk
         -contaLoja String
         +autorizarTransacao(requisicao) ResultadoAutorizacao
@@ -62,18 +68,19 @@ classDiagram
     }
     class CheckoutFacade
 
-    ProcessadorPagamento <|.. AdapterGatewayA
-    ProcessadorPagamento <|.. AdapterGatewayB
-    AdapterGatewayA --> GatewayASdk : adapta
-    AdapterGatewayB --> GatewayBSdk : adapta
+    ProcessadorPagamento <|.. ProcessadorGatewayBase
+    ProcessadorGatewayBase <|-- ProcessadorGatewayA
+    ProcessadorGatewayBase <|-- ProcessadorGatewayB
+    ProcessadorGatewayA --> GatewayASdk : adapta
+    ProcessadorGatewayB --> GatewayBSdk : adapta
     GatewayASdk --> GatewayAChargeResponse : cria
     GatewayASdk --> GatewayASdkException : lança
     GatewayBSdk --> GatewayBRetorno : cria
     GatewayBSdk --> GatewayBSdkException : lança
-    AdapterGatewayA ..> RequisicaoPagamento : converte
-    AdapterGatewayB ..> RequisicaoPagamento : converte
-    AdapterGatewayA ..> ResultadoAutorizacao : produz
-    AdapterGatewayB ..> ResultadoAutorizacao : produz
+    ProcessadorGatewayA ..> RequisicaoPagamento : converte
+    ProcessadorGatewayB ..> RequisicaoPagamento : converte
+    ProcessadorGatewayA ..> ResultadoAutorizacao : produz
+    ProcessadorGatewayB ..> ResultadoAutorizacao : produz
     CheckoutFacade --> ProcessadorPagamento : usa
 ```
 

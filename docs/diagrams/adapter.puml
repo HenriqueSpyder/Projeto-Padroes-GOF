@@ -7,14 +7,22 @@ interface ProcessadorPagamento {
     + getNomeGateway(): String
 }
 
-class AdapterGatewayA {
+abstract class ProcessadorGatewayBase {
+    # validar(requisicao: RequisicaoPagamento): void
+    # negado(mensagem: String, detalhe: String): ResultadoAutorizacao
+    # mascarar(token: String): String
+}
+
+class ProcessadorGatewayA {
+    + {static} NOME: String
     - sdk: GatewayASdk
     - merchantId: String
     + autorizarTransacao(requisicao: RequisicaoPagamento): ResultadoAutorizacao
     + getNomeGateway(): String
 }
 
-class AdapterGatewayB {
+class ProcessadorGatewayB {
+    + {static} NOME: String
     - sdk: GatewayBSdk
     - contaLoja: String
     + autorizarTransacao(requisicao: RequisicaoPagamento): ResultadoAutorizacao
@@ -66,18 +74,19 @@ class ResultadoAutorizacao {
 
 class CheckoutFacade
 
-ProcessadorPagamento <|.. AdapterGatewayA
-ProcessadorPagamento <|.. AdapterGatewayB
-AdapterGatewayA --> GatewayASdk : adapta >
-AdapterGatewayB --> GatewayBSdk : adapta >
+ProcessadorPagamento <|.. ProcessadorGatewayBase
+ProcessadorGatewayBase <|-- ProcessadorGatewayA
+ProcessadorGatewayBase <|-- ProcessadorGatewayB
+ProcessadorGatewayA --> GatewayASdk : adapta >
+ProcessadorGatewayB --> GatewayBSdk : adapta >
 GatewayASdk --> GatewayAChargeResponse : cria >
 GatewayASdk ..> GatewayASdkException : lança >
 GatewayBSdk --> GatewayBRetorno : cria >
 GatewayBSdk ..> GatewayBSdkException : lança >
-AdapterGatewayA ..> RequisicaoPagamento
-AdapterGatewayB ..> RequisicaoPagamento
-AdapterGatewayA ..> ResultadoAutorizacao
-AdapterGatewayB ..> ResultadoAutorizacao
+ProcessadorGatewayA ..> RequisicaoPagamento
+ProcessadorGatewayB ..> RequisicaoPagamento
+ProcessadorGatewayA ..> ResultadoAutorizacao
+ProcessadorGatewayB ..> ResultadoAutorizacao
 CheckoutFacade --> ProcessadorPagamento : cliente do alvo >
 
 note right of GatewayASdk

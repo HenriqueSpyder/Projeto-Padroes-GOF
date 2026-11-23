@@ -11,13 +11,13 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class AdapterGatewayATest {
+class ProcessadorGatewayATest {
 
-    private AdapterGatewayA adapter;
+    private ProcessadorGatewayA adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new AdapterGatewayA(new GatewayASdk(), "MERCHANT-UNIRV-A");
+        adapter = new ProcessadorGatewayA(new GatewayASdk(), "MERCHANT-UNIRV-A");
     }
 
     @Test

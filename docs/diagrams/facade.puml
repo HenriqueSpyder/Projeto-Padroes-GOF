@@ -6,9 +6,14 @@ class CheckoutMvcController
 class CheckoutApiController
 class DemonstracaoCheckoutRunner
 
+class ValidadorCheckout
+class EmissorComprovante
+
 class CheckoutFacade {
     - pedidoRepository: PedidoRepository
     - calculoPedidoService: CalculoPedidoService
+    - validador: ValidadorCheckout
+    - emissorComprovante: EmissorComprovante
     - processadores: List
     + finalizarPedido(solicitacao: SolicitacaoCheckout): ResultadoCheckout
 }
@@ -58,6 +63,8 @@ CheckoutApiController --> CheckoutFacade : cliente >
 DemonstracaoCheckoutRunner --> CheckoutFacade : cliente >
 CheckoutFacade --> PedidoRepository : consulta e salva >
 CheckoutFacade --> CalculoPedidoService : calcula >
+CheckoutFacade --> ValidadorCheckout : valida >
+CheckoutFacade --> EmissorComprovante : emite comprovante >
 CheckoutFacade --> ProcessadorPagamento : autoriza >
 CheckoutFacade ..> SolicitacaoCheckout
 CheckoutFacade ..> ResultadoCheckout
