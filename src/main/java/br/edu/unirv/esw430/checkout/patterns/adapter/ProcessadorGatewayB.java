@@ -13,12 +13,14 @@ import org.springframework.stereotype.Component;
  * e traduz o código numérico do SDK para autorização do domínio.
  */
 @Component
-public class AdapterGatewayB implements ProcessadorPagamento {
+public class ProcessadorGatewayB extends ProcessadorGatewayBase {
+
+    public static final String NOME = "GATEWAY_B";
 
     private final GatewayBSdk sdk;
     private final String contaLoja;
 
-    public AdapterGatewayB(GatewayBSdk sdk,
+    public ProcessadorGatewayB(GatewayBSdk sdk,
                            @Value("${checkout.gateway-b.conta-loja:LOJA-UNIRV-B}") String contaLoja) {
         if (sdk == null) {
             throw new IllegalArgumentException("SDK do Gateway B é obrigatório.");
@@ -29,7 +31,7 @@ public class AdapterGatewayB implements ProcessadorPagamento {
 
     @Override
     public String getNomeGateway() {
-        return GATEWAY_B;
+        return NOME;
     }
 
     @Override
@@ -88,31 +90,5 @@ public class AdapterGatewayB implements ProcessadorPagamento {
             return "Transação recusada no Gateway B.";
         }
         return "Transação não concluída no Gateway B (código " + retorno.getCodigoRetorno() + ").";
-    }
-
-    private ResultadoAutorizacao negado(String mensagem, String detalhe) {
-        return new ResultadoAutorizacao(false, getNomeGateway(), null, null, mensagem, detalhe);
-    }
-
-    private void validar(RequisicaoPagamento requisicao) {
-        if (requisicao == null) {
-            throw new IllegalArgumentException("Requisição de pagamento é obrigatória.");
-        }
-        if (requisicao.getValor() == null) {
-            throw new IllegalArgumentException("Valor da requisição é obrigatório.");
-        }
-        if (requisicao.getReferenciaPedido() == null || requisicao.getReferenciaPedido().isBlank()) {
-            throw new IllegalArgumentException("Referência do pedido é obrigatória.");
-        }
-    }
-
-    private String mascarar(String token) {
-        if (token == null || token.isBlank()) {
-            return "(vazio)";
-        }
-        if (token.length() <= 4) {
-            return "****";
-        }
-        return "****" + token.substring(token.length() - 4);
     }
 }

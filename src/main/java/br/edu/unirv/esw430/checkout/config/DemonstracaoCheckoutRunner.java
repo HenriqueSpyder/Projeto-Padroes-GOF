@@ -10,6 +10,8 @@ import br.edu.unirv.esw430.checkout.model.ResultadoAutorizacao;
 import br.edu.unirv.esw430.checkout.model.ResultadoCalculo;
 import br.edu.unirv.esw430.checkout.model.ResultadoCheckout;
 import br.edu.unirv.esw430.checkout.model.SolicitacaoCheckout;
+import br.edu.unirv.esw430.checkout.patterns.adapter.ProcessadorGatewayA;
+import br.edu.unirv.esw430.checkout.patterns.adapter.ProcessadorGatewayB;
 import br.edu.unirv.esw430.checkout.patterns.adapter.ProcessadorPagamento;
 import br.edu.unirv.esw430.checkout.patterns.facade.CheckoutFacade;
 import br.edu.unirv.esw430.checkout.service.CalculoPedidoService;
@@ -56,27 +58,27 @@ public class DemonstracaoCheckoutRunner implements CommandLineRunner {
 
         secao("1. ADAPTER — ProcessadorPagamento traduz SDKs incompatíveis");
         cenario("Gateway A aprova R$ 10,50 e converte o valor para 1050 centavos", () -> {
-            ResultadoAutorizacao resultado = gateway(ProcessadorPagamento.GATEWAY_A).autorizarTransacao(
+            ResultadoAutorizacao resultado = gateway(ProcessadorGatewayA.NOME).autorizarTransacao(
                     requisicao("PED-X", "10.50", "tok_visa_4242", "12345678901"));
             imprimirAutorizacao(resultado);
         });
         cenario("Gateway A recusa o token tok_recusado (status DECLINED do SDK)", () -> {
-            ResultadoAutorizacao resultado = gateway(ProcessadorPagamento.GATEWAY_A).autorizarTransacao(
+            ResultadoAutorizacao resultado = gateway(ProcessadorGatewayA.NOME).autorizarTransacao(
                     requisicao("PED-X", "10.50", "tok_recusado", "12345678901"));
             imprimirAutorizacao(resultado);
         });
         cenario("Gateway A recebe token vazio: a exceção do SDK vira resposta do domínio", () -> {
-            ResultadoAutorizacao resultado = gateway(ProcessadorPagamento.GATEWAY_A).autorizarTransacao(
+            ResultadoAutorizacao resultado = gateway(ProcessadorGatewayA.NOME).autorizarTransacao(
                     requisicao("PED-X", "10.50", "", "12345678901"));
             imprimirAutorizacao(resultado);
         });
         cenario("Gateway B aprova e traduz codigoRetorno 0", () -> {
-            ResultadoAutorizacao resultado = gateway(ProcessadorPagamento.GATEWAY_B).autorizarTransacao(
+            ResultadoAutorizacao resultado = gateway(ProcessadorGatewayB.NOME).autorizarTransacao(
                     requisicao("PED-Y", "89.90", "tok_master_5555", "98765432100"));
             imprimirAutorizacao(resultado);
         });
         cenario("Gateway B recusa valor acima do limite (codigoRetorno 51)", () -> {
-            ResultadoAutorizacao resultado = gateway(ProcessadorPagamento.GATEWAY_B).autorizarTransacao(
+            ResultadoAutorizacao resultado = gateway(ProcessadorGatewayB.NOME).autorizarTransacao(
                     requisicao("PED-Y", "5000.01", "tok_master_5555", "98765432100"));
             imprimirAutorizacao(resultado);
         });

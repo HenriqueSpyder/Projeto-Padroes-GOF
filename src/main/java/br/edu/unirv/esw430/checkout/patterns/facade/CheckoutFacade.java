@@ -13,11 +13,12 @@ import br.edu.unirv.esw430.checkout.model.StatusPedido;
 import br.edu.unirv.esw430.checkout.patterns.adapter.ProcessadorPagamento;
 import br.edu.unirv.esw430.checkout.repository.PedidoRepository;
 import br.edu.unirv.esw430.checkout.service.CalculoPedidoService;
+import br.edu.unirv.esw430.checkout.service.EmissorComprovante;
+import br.edu.unirv.esw430.checkout.service.ValidadorCheckout;
+import br.edu.unirv.esw430.checkout.service.ValidadorCheckout.DadosPagamento;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -27,75 +28,51 @@ import java.util.List;
 @Service
 public class CheckoutFacade {
 
-    private static final DateTimeFormatter NUMERO_COMPROVANTE = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-
     private final PedidoRepository pedidoRepository;
     private final CalculoPedidoService calculoPedidoService;
+    private final ValidadorCheckout validador;
+    private final EmissorComprovante emissorComprovante;
     private final List<ProcessadorPagamento> processadores;
 
     public CheckoutFacade(PedidoRepository pedidoRepository,
                           CalculoPedidoService calculoPedidoService,
+                          ValidadorCheckout validador,
+                          EmissorComprovante emissorComprovante,
                           List<ProcessadorPagamento> processadores) {
         this.pedidoRepository = pedidoRepository;
         this.calculoPedidoService = calculoPedidoService;
+        this.validador = validador;
+        this.emissorComprovante = emissorComprovante;
         this.processadores = List.copyOf(processadores);
     }
 
     public ResultadoCheckout finalizarPedido(SolicitacaoCheckout solicitacao) {
-        if (solicitacao == null) {
-            throw new CheckoutInvalidoException("Solicitação de checkout é obrigatória.");
-        }
-
-        String pedidoId = texto(solicitacao.getPedidoId());
-        if (pedidoId.isBlank()) {
-            throw new CheckoutInvalidoException("Informe o identificador do pedido.");
-        }
-
+        String pedidoId = validador.exigirPedidoId(solicitacao);
         Pedido pedido = pedidoRepository.buscarPorId(pedidoId)
                 .orElseThrow(() -> new PedidoNaoEncontradoException("Pedido não encontrado: " + pedidoId + "."));
-
-        if (pedido.getStatus() != StatusPedido.ABERTO) {
-            throw new CheckoutInvalidoException(
-                    "Pedido " + pedido.getId() + " não está aberto para checkout. Status atual: "
-                            + pedido.getStatus().getDescricao() + ".");
-        }
-        if (pedido.getItens().isEmpty()) {
-            throw new CheckoutInvalidoException("Pedido " + pedido.getId() + " não possui itens.");
-        }
-
-        String token = texto(solicitacao.getTokenCartao());
-        if (token.isBlank()) {
-            throw new CheckoutInvalidoException("Informe o token do cartão.");
-        }
-        String gateway = texto(solicitacao.getGateway());
-        if (gateway.isBlank()) {
-            throw new CheckoutInvalidoException("Informe o gateway de pagamento.");
-        }
+        validador.exigirPedidoPronto(pedido);
+        DadosPagamento dados = validador.exigirDadosPagamento(solicitacao);
 
         ResultadoCalculo calculo = calculoPedidoService.calcular(pedido, solicitacao.getCodigoCupom());
         if (calculo.getTotal().compareTo(BigDecimal.ZERO) <= 0) {
             throw new CheckoutInvalidoException("O valor final do pedido deve ser maior que zero.");
         }
 
-        ProcessadorPagamento processador = selecionarProcessador(gateway);
+        ProcessadorPagamento processador = selecionarProcessador(dados.gateway());
         RequisicaoPagamento requisicao = new RequisicaoPagamento(
                 pedido.getId(),
                 calculo.getTotal(),
                 "BRL",
-                token,
+                dados.token(),
                 pedido.getCliente().getDocumento(),
                 "Checkout do pedido " + pedido.getId());
-
         ResultadoAutorizacao autorizacao = processador.autorizarTransacao(requisicao);
-        if (autorizacao.isAutorizado()) {
-            pedido.setStatus(StatusPedido.PAGO);
-        } else {
-            pedido.setStatus(StatusPedido.RECUSADO);
-        }
+
+        pedido.setStatus(autorizacao.isAutorizado() ? StatusPedido.PAGO : StatusPedido.RECUSADO);
         pedidoRepository.salvar(pedido);
 
         if (autorizacao.isAutorizado()) {
-            Comprovante comprovante = emitirComprovante(pedido, autorizacao, calculo.getTotal());
+            Comprovante comprovante = emissorComprovante.emitir(pedido, autorizacao, calculo.getTotal());
             return new ResultadoCheckout(
                     true,
                     "Pedido finalizado e pagamento autorizado.",
@@ -106,7 +83,6 @@ public class CheckoutFacade {
                     autorizacao,
                     comprovante);
         }
-
         return new ResultadoCheckout(
                 false,
                 "Pagamento não autorizado. O pedido foi marcado como recusado.",
@@ -128,23 +104,5 @@ public class CheckoutFacade {
                                 .map(ProcessadorPagamento::getNomeGateway)
                                 .sorted()
                                 .toList()) + "."));
-    }
-
-    private Comprovante emitirComprovante(Pedido pedido, ResultadoAutorizacao autorizacao, BigDecimal total) {
-        LocalDateTime agora = LocalDateTime.now();
-        String numero = "CMP-" + pedido.getId() + "-" + agora.format(NUMERO_COMPROVANTE);
-        return new Comprovante(
-                numero,
-                pedido.getId(),
-                pedido.getCliente().getNome(),
-                autorizacao.getGateway(),
-                autorizacao.getIdTransacao(),
-                autorizacao.getCodigoAutorizacao(),
-                total,
-                agora);
-    }
-
-    private String texto(String valor) {
-        return valor == null ? "" : valor.trim();
     }
 }

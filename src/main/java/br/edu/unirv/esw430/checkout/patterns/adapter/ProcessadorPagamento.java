@@ -9,9 +9,6 @@ import br.edu.unirv.esw430.checkout.model.ResultadoAutorizacao;
  */
 public interface ProcessadorPagamento {
 
-    String GATEWAY_A = "GATEWAY_A";
-    String GATEWAY_B = "GATEWAY_B";
-
     ResultadoAutorizacao autorizarTransacao(RequisicaoPagamento requisicao);
 
     String getNomeGateway();

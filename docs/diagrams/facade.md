@@ -2,7 +2,7 @@
 
 Padrão estrutural **Facade** na classe `CheckoutFacade`.
 
-O método `finalizarPedido` é a operação de alto nível. Ele consulta e valida o pedido pelo `PedidoRepository`, obtém o valor pela cadeia de `CalculadoraPedido` (via `CalculoPedidoService`), autoriza a cobrança por um `ProcessadorPagamento` e emite o `ResultadoCheckout` com o comprovante quando o pagamento é aprovado.
+O método `finalizarPedido` é a operação de alto nível. Ele consulta o pedido no `PedidoRepository`, delega as validações ao `ValidadorCheckout`, obtém o valor pela cadeia de `CalculadoraPedido` (via `CalculoPedidoService`), autoriza a cobrança por um `ProcessadorPagamento` e emite o `ResultadoCheckout` com o comprovante (montado pelo `EmissorComprovante`) quando o pagamento é aprovado.
 
 Os subsistemas Adapter e Decorator estão detalhados em [adapter.md](adapter.md) e [decorator.md](decorator.md).
 
@@ -23,9 +23,13 @@ classDiagram
     class CheckoutFacade {
         -pedidoRepository PedidoRepository
         -calculoPedidoService CalculoPedidoService
+        -validador ValidadorCheckout
+        -emissorComprovante EmissorComprovante
         -processadores List
         +finalizarPedido(solicitacao) ResultadoCheckout
     }
+    class ValidadorCheckout
+    class EmissorComprovante
     class PedidoRepository {
         <<interface>>
         +buscarPorId(id) Optional
@@ -63,6 +67,8 @@ classDiagram
     class ResultadoCheckout
     class Pedido
 
+    CheckoutFacade --> ValidadorCheckout : valida
+    CheckoutFacade --> EmissorComprovante : emite comprovante
     CheckoutMvcController --> CheckoutFacade
     CheckoutApiController --> CheckoutFacade
     DemonstracaoCheckoutRunner --> CheckoutFacade

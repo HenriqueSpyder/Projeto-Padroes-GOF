@@ -8,13 +8,15 @@ import br.edu.unirv.esw430.checkout.model.Pedido;
 import br.edu.unirv.esw430.checkout.model.ResultadoCheckout;
 import br.edu.unirv.esw430.checkout.model.SolicitacaoCheckout;
 import br.edu.unirv.esw430.checkout.model.StatusPedido;
-import br.edu.unirv.esw430.checkout.patterns.adapter.AdapterGatewayA;
-import br.edu.unirv.esw430.checkout.patterns.adapter.AdapterGatewayB;
+import br.edu.unirv.esw430.checkout.patterns.adapter.ProcessadorGatewayA;
+import br.edu.unirv.esw430.checkout.patterns.adapter.ProcessadorGatewayB;
 import br.edu.unirv.esw430.checkout.patterns.adapter.sdk.GatewayASdk;
 import br.edu.unirv.esw430.checkout.patterns.adapter.sdk.GatewayBSdk;
 import br.edu.unirv.esw430.checkout.repository.CupomRepositoryMemoria;
 import br.edu.unirv.esw430.checkout.repository.PedidoRepositoryMemoria;
 import br.edu.unirv.esw430.checkout.service.CalculoPedidoService;
+import br.edu.unirv.esw430.checkout.service.EmissorComprovante;
+import br.edu.unirv.esw430.checkout.service.ValidadorCheckout;
 import br.edu.unirv.esw430.checkout.service.MontadorCalculadoraPedidoPadrao;
 import br.edu.unirv.esw430.checkout.service.ResolvedorCupom;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,9 +42,11 @@ class CheckoutFacadeTest {
         facade = new CheckoutFacade(
                 pedidos,
                 calculo,
+                new ValidadorCheckout(),
+                new EmissorComprovante(),
                 List.of(
-                        new AdapterGatewayA(new GatewayASdk(), "MERCHANT-UNIRV-A"),
-                        new AdapterGatewayB(new GatewayBSdk(), "LOJA-UNIRV-B")));
+                        new ProcessadorGatewayA(new GatewayASdk(), "MERCHANT-UNIRV-A"),
+                        new ProcessadorGatewayB(new GatewayBSdk(), "LOJA-UNIRV-B")));
     }
 
     @Test

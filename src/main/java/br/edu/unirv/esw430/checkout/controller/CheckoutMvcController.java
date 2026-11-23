@@ -5,6 +5,7 @@ import br.edu.unirv.esw430.checkout.exception.CheckoutInvalidoException;
 import br.edu.unirv.esw430.checkout.exception.PedidoNaoEncontradoException;
 import br.edu.unirv.esw430.checkout.model.Pedido;
 import br.edu.unirv.esw430.checkout.model.ResultadoCheckout;
+import br.edu.unirv.esw430.checkout.patterns.adapter.ProcessadorGatewayA;
 import br.edu.unirv.esw430.checkout.patterns.adapter.ProcessadorPagamento;
 import br.edu.unirv.esw430.checkout.patterns.decorator.CalculadoraPedido;
 import br.edu.unirv.esw430.checkout.patterns.facade.CheckoutFacade;
@@ -46,7 +47,7 @@ public class CheckoutMvcController {
         if (!model.containsAttribute("form")) {
             SolicitacaoCheckoutForm form = new SolicitacaoCheckoutForm();
             form.setPedidoId("PED-1005");
-            form.setGateway(ProcessadorPagamento.GATEWAY_A);
+            form.setGateway(ProcessadorGatewayA.NOME);
             form.setTokenCartao("tok_visa_4242");
             model.addAttribute("form", form);
         }

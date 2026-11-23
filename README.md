@@ -38,7 +38,7 @@ A aplicação organiza o checkout em camadas e usa o container do Spring para in
 
 - **SRP:** cada decorador trata uma regra; cada adapter só traduz um SDK; a fachada só orquestra.
 - **OCP:** novo gateway é outro adapter; nova parcela do preço é outro decorador incluído no montador.
-- **LSP:** `AdapterGatewayA` e `AdapterGatewayB` são substituíveis como `ProcessadorPagamento`.
+- **LSP:** `ProcessadorGatewayA` e `ProcessadorGatewayB` são substituíveis como `ProcessadorPagamento`.
 - **ISP:** `ProcessadorPagamento` só expõe a autorização; `CalculadoraPedido` só expõe o cálculo.
 - **DIP:** a fachada depende de `PedidoRepository`, `CalculoPedidoService` e `ProcessadorPagamento`, não dos SDKs nem das classes concretas de frete e imposto.
 
@@ -50,7 +50,7 @@ Repository, MVC e a injeção do Spring não entram na contagem dos três padrõ
 
 - `GatewayASdk.cobrar` recebe o valor em **centavos** e devolve `APPROVED` ou `DECLINED`.
 - `GatewayBSdk.pagar` recebe o valor em **double**, o documento do cliente e devolve um **código inteiro** (`0` aprovado, `51` recusado).
-- `AdapterGatewayA` e `AdapterGatewayB` convertem a `RequisicaoPagamento` e o retorno de cada SDK para `ResultadoAutorizacao`. Exceções dos SDKs também viram resposta negada do domínio. O campo `detalheAdaptacao` mostra a chamada traduzida.
+- `ProcessadorGatewayA` e `ProcessadorGatewayB` convertem a `RequisicaoPagamento` e o retorno de cada SDK para `ResultadoAutorizacao`. Exceções dos SDKs também viram resposta negada do domínio. O campo `detalheAdaptacao` mostra a chamada traduzida.
 
 Um token que contém `RECUS` é recusado pelos dois SDKs. O Gateway B também recusa valores acima de R$ 5.000,00.
 
