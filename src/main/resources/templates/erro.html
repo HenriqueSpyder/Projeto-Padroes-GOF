@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Não foi possível calcular</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body>
+<header class="topo">
+    <h1>Cálculo não realizado</h1>
+</header>
+<main class="envoltorio">
+    <section class="cartao">
+        <p class="erro" th:text="${erro}">Erro</p>
+        <p><a class="botao" th:href="@{/}">Voltar aos pedidos</a></p>
+    </section>
+</main>
+</body>
+</html>

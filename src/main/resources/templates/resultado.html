@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Resultado do checkout</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body>
+<header class="topo">
+    <h1>Resultado do Facade</h1>
+    <p>CheckoutFacade consultou o pedido, calculou a cadeia de decorators e autorizou o pagamento pelo adapter.</p>
+</header>
+<main class="envoltorio">
+    <section class="cartao">
+        <p th:class="${resultado.confirmado} ? 'ok' : 'erro'" th:text="${resultado.mensagem}">Mensagem</p>
+        <p>
+            Pedido <strong th:text="${resultado.pedidoId}">PED-1005</strong>
+            — <span th:text="${resultado.clienteNome}">Helena</span>
+            — status <strong th:text="${resultado.statusPedido.descricao}">Pago</strong>
+        </p>
+        <h2>Cálculo</h2>
+        <table>
+            <tbody>
+            <tr th:each="linha : ${resultado.calculo.linhas}">
+                <td th:text="${linha.descricao}">Subtotal</td>
+                <td class="numero" th:text="${#numbers.formatDecimal(linha.valor, 1, 2)}">0,00</td>
+            </tr>
+            <tr>
+                <th>Total</th>
+                <th class="numero" th:text="${#numbers.formatDecimal(resultado.calculo.total, 1, 2)}">0,00</th>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+    <section class="cartao">
+        <h2>Autorização traduzida pelo Adapter</h2>
+        <p>Gateway: <strong th:text="${resultado.autorizacao.gateway}">GATEWAY_A</strong></p>
+        <p>Autorizado: <strong th:text="${resultado.autorizacao.autorizado} ? 'sim' : 'não'">sim</strong></p>
+        <p>Transação: <span th:text="${resultado.autorizacao.idTransacao}">TX</span></p>
+        <p>Código: <span th:text="${resultado.autorizacao.codigoAutorizacao}">A</span></p>
+        <p th:text="${resultado.autorizacao.mensagem}">Mensagem</p>
+        <pre th:text="${resultado.autorizacao.detalheAdaptacao}">detalhe</pre>
+    </section>
+    <section class="cartao" th:if="${resultado.comprovante != null}">
+        <h2>Comprovante</h2>
+        <p>Número: <strong th:text="${resultado.comprovante.numero}">CMP</strong></p>
+        <p>Valor: <strong th:text="${#numbers.formatDecimal(resultado.comprovante.valorTotal, 1, 2)}">0,00</strong></p>
+        <p>Emitido em: <span th:text="${#temporals.format(resultado.comprovante.emitidoEm, 'dd/MM/yyyy HH:mm:ss')}">data</span></p>
+    </section>
+    <p><a class="botao" th:href="@{/}">Voltar aos pedidos</a></p>
+</main>
+</body>
+</html>

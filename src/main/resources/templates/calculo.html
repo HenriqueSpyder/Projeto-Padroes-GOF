@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cálculo do pedido</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body>
+<header class="topo">
+    <h1>Cadeia de Decorators</h1>
+    <p>Cada decorador acrescenta uma responsabilidade: cupom, frete e imposto. O componente base soma os itens.</p>
+</header>
+<main class="envoltorio">
+    <section class="cartao">
+        <p>Pedido <strong th:text="${pedido.id}">PED-1001</strong>
+            — <span th:text="${pedido.cliente.nome}">Ana</span></p>
+        <p>Cupom: <strong th:text="${(cupom == null or #strings.isEmpty(cupom)) ? 'nenhum' : cupom}">PROMO10</strong></p>
+        <p>Cadeia (interno → externo)</p>
+        <p class="cadeia" th:text="${cadeia}">CalculoPedidoBase</p>
+        <table>
+            <thead>
+            <tr>
+                <th>Item</th>
+                <th>Qtd.</th>
+                <th class="numero">Preço</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${pedido.itens}">
+                <td th:text="${item.descricao}">Item</td>
+                <td th:text="${item.quantidade}">1</td>
+                <td class="numero" th:text="${#numbers.formatDecimal(item.precoUnitario, 1, 2)}">0,00</td>
+            </tr>
+            </tbody>
+        </table>
+        <h2>Composição do valor</h2>
+        <table>
+            <tbody>
+            <tr th:each="linha : ${calculo.linhas}">
+                <td th:text="${linha.descricao}">Subtotal</td>
+                <td class="numero" th:text="${#numbers.formatDecimal(linha.valor, 1, 2)}">0,00</td>
+            </tr>
+            <tr>
+                <th>Total</th>
+                <th class="numero" th:text="${#numbers.formatDecimal(calculo.total, 1, 2)}">0,00</th>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+    <p><a class="botao" th:href="@{/}">Voltar aos pedidos</a></p>
+</main>
+</body>
+</html>

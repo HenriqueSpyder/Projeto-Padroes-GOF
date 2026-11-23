@@ -1,0 +1,3 @@
+Checkout de pedidos — Padroes estruturais GoF
+Adapter | Decorator | Facade
+ESW430 Arquitetura de Software — UniRV

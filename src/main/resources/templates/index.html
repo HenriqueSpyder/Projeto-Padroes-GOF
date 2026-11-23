@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Checkout — Padrões GoF</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body>
+<header class="topo">
+    <h1>Fechamento de pedido</h1>
+    <p>Adapter, Decorator e Facade no checkout de um e-commerce. ESW430 — Arquitetura de Software — UniRV.</p>
+    <p>O console da aplicação já executou os cenários automáticos. O pedido PED-1005 começa aberto para este formulário.</p>
+</header>
+<main class="envoltorio">
+    <section class="cartao">
+        <h2>Pedidos</h2>
+        <p class="aviso" th:if="${aviso}" th:text="${aviso}"></p>
+        <table>
+            <thead>
+            <tr>
+                <th>Pedido</th>
+                <th>Cliente</th>
+                <th>CEP</th>
+                <th>Itens</th>
+                <th>Status</th>
+                <th>Cálculo</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="pedido : ${pedidos}">
+                <td th:text="${pedido.id}">PED-1005</td>
+                <td>
+                    <span th:text="${pedido.cliente.nome}">Helena Prado</span><br>
+                    <span class="ajuda" th:text="${pedido.cliente.email}">email</span>
+                </td>
+                <td th:text="${pedido.cepEntrega}">74045-000</td>
+                <td th:text="${pedido.itens.size()}">1</td>
+                <td>
+                    <span th:class="${'status status-' + #strings.toLowerCase(pedido.status.name())}"
+                          th:text="${pedido.status.descricao}">Aberto</span>
+                </td>
+                <td><a th:href="@{/pedidos/{id}/calculo(id=${pedido.id}, cupom='PROMO10')}">Com PROMO10</a></td>
+            </tr>
+            </tbody>
+        </table>
+        <form class="acoes" th:action="@{/pedidos/restaurar}" method="post">
+            <button class="secundario" type="submit">Restaurar pedidos de demonstração</button>
+        </form>
+    </section>
+
+    <section class="cartao">
+        <h2>Checkout</h2>
+        <p class="ajuda">Token <code>tok_visa_4242</code> aprova. Token <code>tok_recusado</code> é negado pelos dois gateways. Cupons: PROMO10, VALE20 e BEMVINDO.</p>
+        <form th:action="@{/checkout}" th:object="${form}" method="post">
+            <p class="erro" th:if="${erro}" th:text="${erro}"></p>
+            <ul class="erro" th:if="${errosForm != null}">
+                <li th:each="msg : ${errosForm}" th:text="${msg}"></li>
+            </ul>
+            <div class="grade">
+                <div>
+                    <label for="pedidoId">Pedido</label>
+                    <select id="pedidoId" th:field="*{pedidoId}">
+                        <option th:each="pedido : ${pedidos}"
+                                th:value="${pedido.id}"
+                                th:text="${pedido.id + ' — ' + pedido.cliente.nome + ' (' + pedido.status.descricao + ')'}"></option>
+                    </select>
+                </div>
+                <div>
+                    <label for="gateway">Gateway</label>
+                    <select id="gateway" th:field="*{gateway}">
+                        <option th:each="gateway : ${gateways}"
+                                th:value="${gateway.nomeGateway}"
+                                th:text="${gateway.nomeGateway}"></option>
+                    </select>
+                </div>
+                <div>
+                    <label for="codigoCupom">Cupom (opcional)</label>
+                    <input id="codigoCupom" th:field="*{codigoCupom}" placeholder="PROMO10">
+                </div>
+                <div>
+                    <label for="tokenCartao">Token do cartão</label>
+                    <input id="tokenCartao" th:field="*{tokenCartao}">
+                </div>
+            </div>
+            <div class="acoes">
+                <button type="submit">Finalizar pedido</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="cartao">
+        <h2>Cupons</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Código</th>
+                <th>Tipo</th>
+                <th>Valor</th>
+                <th>Descrição</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="cupom : ${cupons}">
+                <td th:text="${cupom.codigo}">PROMO10</td>
+                <td th:text="${cupom.tipo.descricao}">Percentual</td>
+                <td class="numero" th:text="${cupom.valor}">10</td>
+                <td th:text="${cupom.descricao}">desconto</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>

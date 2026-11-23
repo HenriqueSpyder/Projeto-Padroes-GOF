@@ -1,0 +1,93 @@
+@startuml decorator
+skinparam classAttributeIconSize 0
+title Decorator — CalculadoraPedido\ncheckout de e-commerce (ESW430)
+
+interface CalculadoraPedido {
+    + calcular(pedido: Pedido): ResultadoCalculo
+}
+
+class CalculoPedidoBase {
+    + calcular(pedido: Pedido): ResultadoCalculo
+}
+
+abstract class CalculadoraDecorator {
+    - envolvida: CalculadoraPedido
+    + getComponente(): CalculadoraPedido
+}
+
+class CupomDescontoDecorator {
+    - cupom: Cupom
+    + calcular(pedido: Pedido): ResultadoCalculo
+}
+
+class FreteDecorator {
+    - valorInterno: BigDecimal
+    - valorNacional: BigDecimal
+    - limiteGratis: BigDecimal
+    - prefixosInternos: List
+    + calcular(pedido: Pedido): ResultadoCalculo
+}
+
+class ImpostoDecorator {
+    - aliquota: BigDecimal
+    + calcular(pedido: Pedido): ResultadoCalculo
+}
+
+interface MontadorCalculadoraPedido {
+    + montar(cupom: Cupom): CalculadoraPedido
+}
+
+class MontadorCalculadoraPedidoPadrao {
+    - freteProperties: FreteProperties
+    - impostoProperties: ImpostoProperties
+    + montar(cupom: Cupom): CalculadoraPedido
+}
+
+class CalculoPedidoService {
+    + calcular(pedido: Pedido, codigoCupom: String): ResultadoCalculo
+    + obterCalculadora(codigoCupom: String): CalculadoraPedido
+    + descrever(calculadora: CalculadoraPedido): String
+}
+
+class ResultadoCalculo {
+    - subtotal: BigDecimal
+    - desconto: BigDecimal
+    - frete: BigDecimal
+    - imposto: BigDecimal
+    - total: BigDecimal
+    - linhas: List
+}
+
+class LinhaCalculo {
+    - descricao: String
+    - valor: BigDecimal
+}
+
+class Cupom
+class Pedido
+
+CalculadoraPedido <|.. CalculoPedidoBase
+CalculadoraPedido <|.. CalculadoraDecorator
+CalculadoraDecorator <|-- CupomDescontoDecorator
+CalculadoraDecorator <|-- FreteDecorator
+CalculadoraDecorator <|-- ImpostoDecorator
+CalculadoraDecorator o--> CalculadoraPedido : envolvida
+CupomDescontoDecorator --> Cupom
+MontadorCalculadoraPedido <|.. MontadorCalculadoraPedidoPadrao
+MontadorCalculadoraPedidoPadrao ..> CalculoPedidoBase : cria >
+MontadorCalculadoraPedidoPadrao ..> CupomDescontoDecorator : cria >
+MontadorCalculadoraPedidoPadrao ..> FreteDecorator : cria >
+MontadorCalculadoraPedidoPadrao ..> ImpostoDecorator : cria >
+CalculoPedidoService --> MontadorCalculadoraPedido
+CalculoPedidoService ..> CalculadoraPedido
+CalculadoraPedido ..> Pedido
+CalculadoraPedido ..> ResultadoCalculo
+ResultadoCalculo o--> LinhaCalculo
+
+note bottom of ImpostoDecorator
+  Alíquota sobre
+  subtotal menos desconto.
+  Não inclui o frete.
+end note
+
+@enduml

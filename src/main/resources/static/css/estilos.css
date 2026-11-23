@@ -1,0 +1,111 @@
+:root {
+    color-scheme: light;
+    --fundo: #f4f6f8;
+    --cartao: #ffffff;
+    --texto: #1c2430;
+    --muted: #5c6b7a;
+    --linha: #d9e0e7;
+    --primaria: #0f6b4c;
+    --primaria-escura: #0b5139;
+    --aviso: #8a5a00;
+    --erro: #8d1d2c;
+    --ok: #0f6b4c;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: var(--fundo);
+    color: var(--texto);
+    line-height: 1.45;
+}
+
+a { color: var(--primaria-escura); }
+
+.topo {
+    background: var(--primaria);
+    color: #fff;
+    padding: 1.25rem 1.5rem 1.4rem;
+}
+
+.topo h1 { margin: 0 0 0.35rem; font-size: 1.55rem; }
+
+.topo p { margin: 0.2rem 0; max-width: 68rem; }
+
+.envoltorio { max-width: 72rem; margin: 0 auto; padding: 1.25rem; }
+
+.cartao {
+    background: var(--cartao);
+    border: 1px solid var(--linha);
+    border-radius: 10px;
+    padding: 1rem 1.1rem 1.2rem;
+    margin-bottom: 1rem;
+}
+
+h2 { margin: 0 0 0.75rem; font-size: 1.2rem; }
+
+.grade {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem 1rem;
+}
+
+label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+
+input, select, button {
+    font: inherit;
+    width: 100%;
+    padding: 0.55rem 0.65rem;
+    border-radius: 8px;
+    border: 1px solid #b7c3ce;
+}
+
+button, .botao {
+    background: var(--primaria);
+    color: #fff;
+    border: 0;
+    text-decoration: none;
+    display: inline-block;
+    width: auto;
+    cursor: pointer;
+    padding: 0.6rem 0.9rem;
+}
+
+button.secundario, .botao.secundario { background: #3d4c5c; }
+
+.acoes { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.9rem; }
+
+table { width: 100%; border-collapse: collapse; }
+
+th, td { text-align: left; padding: 0.5rem 0.4rem; border-bottom: 1px solid var(--linha); vertical-align: top; }
+
+th { font-size: 0.85rem; color: var(--muted); }
+
+.numero { text-align: right; white-space: nowrap; }
+
+.status { font-weight: 700; }
+
+.status-aberto { color: #1d4e89; }
+.status-pago { color: var(--ok); }
+.status-recusado { color: var(--erro); }
+
+.erro { color: var(--erro); font-weight: 650; }
+.aviso { color: var(--aviso); font-weight: 650; }
+.ok { color: var(--ok); font-weight: 700; }
+
+.cadeia, pre {
+    background: #eef3f1;
+    border-radius: 8px;
+    padding: 0.75rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+.ajuda { color: var(--muted); font-size: 0.95rem; }
+
+@media (max-width: 720px) {
+    .grade { grid-template-columns: 1fr; }
+    .topo, .envoltorio { padding-left: 0.85rem; padding-right: 0.85rem; }
+}

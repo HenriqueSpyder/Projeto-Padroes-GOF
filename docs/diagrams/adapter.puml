@@ -1,0 +1,95 @@
+@startuml adapter
+skinparam classAttributeIconSize 0
+title Adapter — ProcessadorPagamento\ncheckout de e-commerce (ESW430)
+
+interface ProcessadorPagamento {
+    + autorizarTransacao(requisicao: RequisicaoPagamento): ResultadoAutorizacao
+    + getNomeGateway(): String
+}
+
+class AdapterGatewayA {
+    - sdk: GatewayASdk
+    - merchantId: String
+    + autorizarTransacao(requisicao: RequisicaoPagamento): ResultadoAutorizacao
+    + getNomeGateway(): String
+}
+
+class AdapterGatewayB {
+    - sdk: GatewayBSdk
+    - contaLoja: String
+    + autorizarTransacao(requisicao: RequisicaoPagamento): ResultadoAutorizacao
+    + getNomeGateway(): String
+}
+
+class GatewayASdk {
+    + cobrar(merchantId: String, valorCentavos: long, cardToken: String, orderRef: String): GatewayAChargeResponse
+}
+
+class GatewayAChargeResponse {
+    - transactionId: String
+    - status: String
+    - authCode: String
+    - technicalMessage: String
+}
+
+class GatewayASdkException
+
+class GatewayBSdk {
+    + pagar(contaLoja: String, valorReais: double, documentoCliente: String, referenciaPedido: String, meioPagamento: String): GatewayBRetorno
+}
+
+class GatewayBRetorno {
+    - codigoRetorno: int
+    - nsu: String
+    - mensagemOperadora: String
+}
+
+class GatewayBSdkException
+
+class RequisicaoPagamento {
+    - referenciaPedido: String
+    - valor: BigDecimal
+    - moeda: String
+    - tokenCartao: String
+    - documentoCliente: String
+    - descricao: String
+}
+
+class ResultadoAutorizacao {
+    - autorizado: boolean
+    - gateway: String
+    - idTransacao: String
+    - codigoAutorizacao: String
+    - mensagem: String
+    - detalheAdaptacao: String
+}
+
+class CheckoutFacade
+
+ProcessadorPagamento <|.. AdapterGatewayA
+ProcessadorPagamento <|.. AdapterGatewayB
+AdapterGatewayA --> GatewayASdk : adapta >
+AdapterGatewayB --> GatewayBSdk : adapta >
+GatewayASdk --> GatewayAChargeResponse : cria >
+GatewayASdk ..> GatewayASdkException : lança >
+GatewayBSdk --> GatewayBRetorno : cria >
+GatewayBSdk ..> GatewayBSdkException : lança >
+AdapterGatewayA ..> RequisicaoPagamento
+AdapterGatewayB ..> RequisicaoPagamento
+AdapterGatewayA ..> ResultadoAutorizacao
+AdapterGatewayB ..> ResultadoAutorizacao
+CheckoutFacade --> ProcessadorPagamento : cliente do alvo >
+
+note right of GatewayASdk
+  SDK simulado incompatível:
+  valor em centavos e status
+  APPROVED ou DECLINED.
+end note
+
+note right of GatewayBSdk
+  SDK simulado incompatível:
+  valor em double e
+  codigoRetorno inteiro.
+end note
+
+@enduml

@@ -1,0 +1,79 @@
+@startuml facade
+skinparam classAttributeIconSize 0
+title Facade — CheckoutFacade\ncheckout de e-commerce (ESW430)
+
+class CheckoutMvcController
+class CheckoutApiController
+class DemonstracaoCheckoutRunner
+
+class CheckoutFacade {
+    - pedidoRepository: PedidoRepository
+    - calculoPedidoService: CalculoPedidoService
+    - processadores: List
+    + finalizarPedido(solicitacao: SolicitacaoCheckout): ResultadoCheckout
+}
+
+interface PedidoRepository {
+    + buscarPorId(id: String): Optional
+    + listarTodos(): List
+    + salvar(pedido: Pedido): Pedido
+    + recarregarDadosIniciais(): void
+}
+
+class PedidoRepositoryMemoria
+
+class CalculoPedidoService {
+    + calcular(pedido: Pedido, codigoCupom: String): ResultadoCalculo
+    + obterCalculadora(codigoCupom: String): CalculadoraPedido
+}
+
+interface MontadorCalculadoraPedido {
+    + montar(cupom: Cupom): CalculadoraPedido
+}
+
+class ResolvedorCupom {
+    + resolver(codigo: String): Cupom
+}
+
+interface CupomRepository {
+    + buscarPorCodigo(codigo: String): Optional
+    + listarTodos(): List
+}
+
+interface CalculadoraPedido {
+    + calcular(pedido: Pedido): ResultadoCalculo
+}
+
+interface ProcessadorPagamento {
+    + autorizarTransacao(requisicao: RequisicaoPagamento): ResultadoAutorizacao
+    + getNomeGateway(): String
+}
+
+class SolicitacaoCheckout
+class ResultadoCheckout
+class Pedido
+
+CheckoutMvcController --> CheckoutFacade : cliente >
+CheckoutApiController --> CheckoutFacade : cliente >
+DemonstracaoCheckoutRunner --> CheckoutFacade : cliente >
+CheckoutFacade --> PedidoRepository : consulta e salva >
+CheckoutFacade --> CalculoPedidoService : calcula >
+CheckoutFacade --> ProcessadorPagamento : autoriza >
+CheckoutFacade ..> SolicitacaoCheckout
+CheckoutFacade ..> ResultadoCheckout
+PedidoRepository <|.. PedidoRepositoryMemoria
+PedidoRepository ..> Pedido
+CalculoPedidoService --> MontadorCalculadoraPedido
+CalculoPedidoService --> ResolvedorCupom
+CalculoPedidoService ..> CalculadoraPedido
+ResolvedorCupom --> CupomRepository
+
+note bottom of CheckoutFacade
+  finalizarPedido orquestra:
+  1. Repository (pedido aberto)
+  2. Decorator (valor final)
+  3. Adapter (autorização)
+  4. comprovante e novo status
+end note
+
+@enduml
